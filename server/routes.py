@@ -47,6 +47,5 @@ def cosmos_test():
     test_id = request.args.get('test_id')
     sec_id = request.args.get('sec_id')
 
-    cursor.execute(f"SELECT * FROM c WHERE c.testId = '{test_id}' AND c.secId = '{sec_id}'")
-    return [Book(*row) for row in cursor]
-    # return list(container.query_items(query=query, enable_cross_partition_query=True))
+    query = f"SELECT * FROM c WHERE c.testId = '{test_id}' AND c.secId = '{sec_id}'"
+    return list(container.query_items(query=query, enable_cross_partition_query=True))
