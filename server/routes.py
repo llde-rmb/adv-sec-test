@@ -4,6 +4,14 @@ from flask import request, render_template, make_response
 from server.webapp import flaskapp, cursor
 from server.models import Book
 
+from azure.cosmos import CosmosClient, exceptions
+
+import os
+import logging
+
+logging.basicConfig(level=logging.DEBUG)
+logger = logging.getLogger(__name__)
+
 
 @flaskapp.route('/')
 def index():
@@ -28,3 +36,16 @@ def index():
         books = [Book(*row) for row in cursor]
 
     return render_template('books.html', books=books)
+
+
+client = CosmosClient.from_connection_string(os.environ.get("DB_CONNECTION_STRING"))
+database = client.get_database_client(os.environ.get("DATABASE_NAME"))
+container = database.get_container_client(os.environ.get("CONTAINER_NAME"))
+
+@flaskapp.route("/test")
+def cosmos_test():
+    test_id = request.args.get('test_id')
+    sec_id = request.args.get('sec_id')
+
+    query = f"SELECT * FROM c WHERE c.testId = '{test_id}' AND c.secId = '{sec_id}'"
+    return list(container.query_items(query=query, enable_cross_partition_query=True))
